@@ -1,0 +1,26 @@
+.collection-list {
+    display: flex;
+    flex-wrap: wrap;
+    .collection-list__item {
+        flex: 1 1 20em;
+        background: rgba(200,200,200, 0.1);
+        margin:1em;
+        .media-wrapper {
+            padding: 1em;
+            overflow: hidden;
+            .image {
+                display: flex;
+                max-height: 300px;
+                img {
+                    width: 100%;
+                    height: auto;
+                    object-fit: contain;
+                    object-position: center;
+                }
+            }
+        }
+        .meta-info {
+            padding: 1em;
+        }
+    }
+}

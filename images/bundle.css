@@ -1,0 +1,31 @@
+/* COLORS, FONTS, ANIMATIONS ETC. */
+/* GLOBAL */
+.collection-list {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+.collection-list .collection-list__item {
+  -webkit-box-flex: 1;
+      -ms-flex: 1 1 25%;
+          flex: 1 1 25%;
+}
+.collection-list .collection-list__item .media-wrapper {
+  height: 300px;
+  width: 300px;
+  overflow: hidden;
+}
+.collection-list .collection-list__item .media-wrapper .image {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.collection-list .collection-list__item .media-wrapper .image img {
+  max-height: 300px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
+}
