@@ -10,12 +10,12 @@ const collectionList = (data) => {
                             </div>
                         </div>
                         <div class="meta-info">
-                            <h2>{{item.name}}</h2>
+                            <h2>{{item.data.name}}</h2>
                             <p>{{item.agency}}</p>
-                            <p>{{item.genre}}</p>
+                            <p v-if="item.genre">{{item.genre}}</p>
                             <p>popularity: {{item.data.popularity}}</p>
                             <p>followers: {{item.data.followers.total}}</p>
-                            <p>{{item.data.genres}}</p>
+                            <p v-if="item.data.genres.length > 0">{{item.data.genres}}</p>
                         </div>
                     </div>
                 </div>
@@ -31,9 +31,31 @@ const collectionList = (data) => {
                 }
 
                 return itemWithData;
-            });
 
-            console.log(data);
+            }).filter((item) => {
+
+                if (item.data.name.toLowerCase() === item.name.toLowerCase()) {
+                    return item;
+                }
+
+                return false;
+
+            }).sort((first, next) => {
+              const nameA = first.data.popularity; // ignore upper and lowercase
+              const nameB = next.data.popularity; // ignore upper and lowercase
+
+              if (nameA > nameB) {
+                return -1;
+              }
+              if (nameA < nameB) {
+                return 1;
+              }
+
+              // names must be equal
+              return 0;
+            }).reverse();
+
+            console.log(`${data.length} records`);
 
             return {
                 items: data,
@@ -118,7 +140,7 @@ const collectionList = (data) => {
                 const grid = this.$el.querySelector(".collection-list");
                 const height = window.innerHeight;
                 const domRect = grid.getBoundingClientRect();
-                const triggerAmount = height - domRect.bottom;
+                const triggerAmount = height - domRect.bottom + 1000;
                 const body = document.body.getBoundingClientRect();
 
                 this.scrollHeight = body.top;

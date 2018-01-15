@@ -1,2 +1,37 @@
 /* COLORS, FONTS, ANIMATIONS ETC. */
 /* GLOBAL */
+.collection-list {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+.collection-list .collection-list__item {
+  -webkit-box-flex: 1;
+      -ms-flex: 1 0 20em;
+          flex: 1 0 20em;
+  background: rgba(200, 200, 200, 0.1);
+  margin: 1em;
+}
+.collection-list .collection-list__item .media-wrapper {
+  padding: 1em;
+  overflow: hidden;
+}
+.collection-list .collection-list__item .media-wrapper .image {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  max-height: 300px;
+}
+.collection-list .collection-list__item .media-wrapper .image img {
+  width: 100%;
+  height: auto;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
+}
+.collection-list .collection-list__item .meta-info {
+  padding: 1em;
+}

@@ -9,9 +9,10 @@
     "watch": "./node_modules/.bin/webpack -d --watch --colors",
     "build": "set PROD_ENV=true && set process.env='production' && webpack -p&&documentation build --output ./README.md --format md",
     "client": "webpack-dev-server ./src/client/main.js --hot --watch --colors",
-    "server": "forever -w --spinSleepTime 99999999 --minUptime 5000 ./src/server/main.js",
+    "server": "forever --spinSleepTime 99999999 --minUptime 5000 ./src/server/main.js",
     "dev": "concurrently --kill-others \"npm run client\" \"npm run server\"",
-    "kill": "taskkill -f -im node"
+    "kill": "taskkill /f /im node.exe",
+    "stopserver": "forever stopall"
   },
   "babel": {
     "presets": [
@@ -63,6 +64,7 @@
     "axios": "^0.17.1",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "mongodb": "^3.0.1",
     "vue": "^2.5.13",
     "whatwg-fetch": "^2.0.3"
   }
