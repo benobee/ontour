@@ -53,7 +53,7 @@ const collectionList = (data) => {
 
               // names must be equal
               return 0;
-            }).reverse();
+            });
 
             console.log(`${data.length} records`);
 
