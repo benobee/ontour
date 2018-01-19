@@ -1,18 +1,19 @@
 <div class="app-wrapper">
-    <div name="list-complete" tag="div" class="collection-list">
-        <div v-for="item in items">
-            <a v-bind:href="" class="inner-content">
-                <div class="media-wrapper">
-                    
+    <div class="collection-list">
+        <div v-for="item in list" class="collection-list__item" :key="item.id" v-if="item.data">
+            <div class="media-wrapper" v-if="item.data">
+                <div class="image" v-if="item.data.images">
+                    <img v-bind:src="item.data.images | img" />
                 </div>
-                <div class="meta-content">
-                    <div class="info">
-                        <div class="title">
-                            {{item.name}}
-                        </div>
-                    </div>
-                </div>>
-            </a
+            </div>
+            <div class="meta-info">
+                <h2>{{item.data.name}}</h2>
+                <p>{{item.agency}}</p>
+                <p>{{item.genre}}</p>
+                <p>popularity: {{item.data.popularity}}</p>
+                <p>followers: {{item.data.followers.total}}</p>
+                <p v-if="item.data.genres.length > 0">{{item.data.genres}}</p>
+            </div>
         </div>
     </div>
 </div>

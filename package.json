@@ -10,7 +10,7 @@
     "build": "set PROD_ENV=true && set process.env='production' && webpack -p&&documentation build --output ./README.md --format md",
     "client": "webpack-dev-server ./src/client/main.js --hot --watch --colors",
     "server": "nodemon ./src/server/main.js localhost 3000",
-    "db" : "mongod --dbpath C:/users/obee-ssd/dev/ontour/db",
+    "db": "mongod --dbpath C:/users/obee-ssd/dev/ontour/db",
     "dev": "concurrently --kill-others \"npm run client\" \"npm run server\" \"npm run db\"",
     "kill": "taskkill /f /im node.exe",
     "stopserver": "forever stopall"
@@ -66,6 +66,8 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "mongodb": "^3.0.1",
+    "pubsub-js": "^1.5.8",
+    "socket.io": "^2.0.4",
     "vue": "^2.5.13",
     "whatwg-fetch": "^2.0.3"
   }

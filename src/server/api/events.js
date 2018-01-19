@@ -1,4 +1,5 @@
-const MongoClient = require('mongodb').MongoClient
+const MongoClient = require('mongodb').MongoClient;
+const app = require('../startup/app');
 
 MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
     console.log("Connected successfully to server");
@@ -7,5 +8,13 @@ MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
 
     db.createCollection("events", function(err, res) {
         if (err) throw err;
+    });
+
+    const events = db.collection("events");
+
+    const results = events.find().limit(50).toArray((err, results) => {
+        app.get('/api/events', (req, res) => {
+            res.send(results);
+        })
     });
 });

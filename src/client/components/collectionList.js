@@ -1,64 +1,15 @@
+import util from "../../util/util";
+import templateHTML from "./collectionList.html";
+
 const collectionList = (data) => {
     return {
-        template: `
-            <div class="app-wrapper">
-                <div class="collection-list">
-                    <div v-for="item in list" class="collection-list__item" :key="item.id">
-                        <div class="media-wrapper" v-if="item.data">
-                            <div class="image" v-if="item.data.images">
-                                <img v-bind:src="item.data.images | img" />
-                            </div>
-                        </div>
-                        <div class="meta-info">
-                            <h2>{{item.data.name}}</h2>
-                            <p>{{item.agency}}</p>
-                            <p v-if="item.genre">{{item.genre}}</p>
-                            <p>popularity: {{item.data.popularity}}</p>
-                            <p>followers: {{item.data.followers.total}}</p>
-                            <p v-if="item.data.genres.length > 0">{{item.data.genres}}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `,
+        template: templateHTML,
         el: "#app",
         data () {
-            data = data.filter((item) => {
-                let itemWithData = false;
-
-                if (item.data) {
-                    itemWithData = item;
-                }
-
-                return itemWithData;
-
-            }).filter((item) => {
-
-                if (item.data.name.toLowerCase() === item.name.toLowerCase()) {
-                    return item;
-                }
-
-                return false;
-
-            }).sort((first, next) => {
-              const nameA = first.data.popularity; // ignore upper and lowercase
-              const nameB = next.data.popularity; // ignore upper and lowercase
-
-              if (nameA > nameB) {
-                return -1;
-              }
-              if (nameA < nameB) {
-                return 1;
-              }
-
-              // names must be equal
-              return 0;
-            });
-
             console.log(`${data.length} records`);
 
             return {
-                items: data,
+                items: data.slice(0),
                 scrollHeight: 0,
                 disableScroll: false,
                 scrollBottom: false,
@@ -109,6 +60,9 @@ const collectionList = (data) => {
                 }
 
                 return image;
+            },
+            stripDiacritics (str) {
+                return util.removeDiacritics(str);
             }
         },
         methods: {
