@@ -1,5 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
-const app = require('../startup/app');
+const app = require('../app/app');
 const axios = require('axios');
 const fs = require('fs');
 
@@ -53,10 +53,9 @@ MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
 
     const artists = db.collection("artists");
 
-    const results = artists.find({ $and: [{ data: { $exists: true } }] }).sort({ 'data.popularity': -1 }).toArray((err, results) => {
-
+    artists.find({ $and: [{ data: { $exists: true } }] }).sort({ 'data.popularity': -1 }).toArray((err, results) => {
         app.get('/api/artists', (req, res) => {
             res.send(results);
-        })
+        });
     });
 });

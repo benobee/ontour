@@ -1,5 +1,12 @@
 import controller from "./core/controller";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io.connect(window.location.host, { reconnect: true });
+
+socket.on("connect", () => {
+    console.log("socket connected");
+});
 
 const App = {
     init () {

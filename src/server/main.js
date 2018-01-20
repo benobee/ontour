@@ -1,2 +1,2 @@
-require('./startup/app');
+require('./app/app');
 require('./api/api');

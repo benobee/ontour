@@ -1,5 +1,14 @@
 import util from "../../util/util";
 import templateHTML from "./collectionList.html";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
+
+socket.on("connect", onConnect);
+
+const onConnect = () => {
+  console.log(`connect ${ socket.id}`);
+};
 
 const collectionList = (data) => {
     return {
@@ -7,7 +16,6 @@ const collectionList = (data) => {
         el: "#app",
         data () {
             console.log(`${data.length} records`);
-
             return {
                 items: data.slice(0),
                 scrollHeight: 0,

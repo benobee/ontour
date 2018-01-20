@@ -1,5 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
-const app = require('../startup/app');
+const app = require('../app/app');
 
 MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
     console.log("Connected successfully to server");
