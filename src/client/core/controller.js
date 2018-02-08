@@ -1,11 +1,9 @@
 import Vue from "vue";
-import collectionList from "../components/collectionList";
+import mapOfEvents from "../components/mapOfEvents";
 
 const controller = {
     init (data) {
-        const list = new Vue(collectionList(data));
-
-        return list;
+        return new Vue(mapOfEvents(data));
     }
 };
 

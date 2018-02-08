@@ -65,7 +65,6 @@ const devServer = {
     host: 'localhost', // Defaults to `localhost`
     port: 8080,
     publicPath: '/',
-    stats: "errors-only",
     proxy: {
         '/api/**': {
             target: 'http://localhost:3000',
@@ -77,7 +76,6 @@ const devServer = {
 
 //extend properties to config
 WEBPACK_CONFIG.devServer = devServer;
-
 
 /****************************************/
 /********   LOADERS / RULES   ***********/
@@ -290,7 +288,7 @@ const output = {
     output: {
         publicPath: '/',
         path: __dirname + "/build",
-        filename: "bundle.js"
+        filename: "client.bundle.js"
     }
 };
 

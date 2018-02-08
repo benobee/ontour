@@ -1,7 +1,8 @@
-const webpack = require('webpack');
-const app = require('express')();
+const express = require('express');
+const app = express();
 const HTTP = require('http').Server(app);
 
+app.use( express.json() ); 
 app.use(function(err, req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -11,6 +12,6 @@ app.use(function(err, req, res, next) {
     res.status(500).send('Something broke dude!');
 });
 
-HTTP.listen(3000);
+HTTP.listen(process.env.PORT || 3000);
 
 module.exports = app;
