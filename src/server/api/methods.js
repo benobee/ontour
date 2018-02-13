@@ -2,16 +2,6 @@ const _ = require('underscore');
 
 const methods = {
     compileTags(array) {
-        const groupBy = function(list, prop) {
-            return list.reduce((groups, item) => {
-                const val = item[prop];
-
-                groups[val] = groups[val] || [];
-                groups[val].push(item);
-                return groups;
-            }, {});
-        };
-
         let venues = array.filter((item) => {
             let hasVenue = false;
 
@@ -52,8 +42,9 @@ const methods = {
                     genres: tagList,
                     name: venues[i][0].name,
                     events: venues[i],
-                    longitude: venues[i][0].coords[0],
-                    latitude: venues[i][0].coords[1],
+                    lat: venues[i][0].coords[ 0 ],
+                    lng: venues[i][0].coords[ 1 ],
+                    location: venues[i][0].location
                 };
 
                 if (tagList.length >= 5) {

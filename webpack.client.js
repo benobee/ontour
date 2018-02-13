@@ -34,6 +34,7 @@ const input = {
     target: 'web',
     context: __dirname,
     entry: [
+        'babel-polyfill',
         './src/client/main.js', 
         './stylesheets/main.less'
     ],
