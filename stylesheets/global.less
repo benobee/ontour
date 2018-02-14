@@ -1,16 +1,17 @@
-body{
-    margin:0;
-    *{
+body {
+    margin: 0;
+    * {
         font-family: "Verdana";
     }
 }
+
 .collection-list {
     display: flex;
     flex-wrap: wrap;
     .collection-list__item {
         flex: 1 0 20em;
-        background: rgba(200,200,200, 0.1);
-        margin:1em;
+        background: rgba(200, 200, 200, 0.1);
+        margin: 1em;
         .media-wrapper {
             padding: 1em;
             overflow: hidden;
@@ -30,26 +31,70 @@ body{
         }
     }
 }
-#interface.menu{
-    height:55px;
-    display:flex;
-    align-items:center;
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#interface.menu {
+    height: 55px;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    padding:1em;
-    .menu__map-info{
-        display:flex;
-        .country, .region, .city{
-            font-size:12px;
-            margin-right:5px;
+    padding: 1em;
+    .menu__map-info {
+        display: flex;
+        .country,
+        .region,
+        .city {
+            font-size: 12px;
+            margin-right: 5px;
             text-transform: uppercase;
         }
     }
-    .menu__nav-item{
-        max-width:40px;
+    .menu__nav-item {
+        max-width: 40px;
         cursor: pointer;
+        position: relative;
+    }
+    .menu__icon.spin {
+        position: absolute;
+        left:0;
+        top:0;
+        display: flex;
+        align-items:center;
+        height:40px;
+        width:40px;
+        opacity:0;
+        visibility: hidden;
+        transition:opacity 0.3s;
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3f3f3f;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+        }
+    }
+    &.loading{
+        .menu__icon.search{
+            opacity:0;
+            visibility: hidden;
+        }
+        .menu__icon.spin{
+            opacity:1;
+            visibility: visible;
+        }
     }
 }
-#map{
-    height:90vh;
-    width:100%;
+
+#map {
+    height: 90vh;
+    width: 100%;
 }

@@ -108,6 +108,7 @@ const mapOfEvents = () => {
             },
 
             getPointsWithinBounds (options) {
+                this.updating = true;
                 const bounds = this.calculateBoundsCoords(this.google.map);
                 const config = {
                     sort: {
@@ -131,6 +132,7 @@ const mapOfEvents = () => {
                     },
                     limit: config.limit
                 }).then((response) => {
+                    this.updating = false;
                     if (response) {
                         Events.emit("points-updated", { options, data: response.data });
                     }
@@ -153,7 +155,6 @@ const mapOfEvents = () => {
                 clusterer.then((googleMapMarkers) => {
                     this.clearMarkers();
                     this.setMap(this.google.map, googleMapMarkers);
-                    this.updating = false;
                 }).catch((err) => {
                     console.log(err);
                 });
