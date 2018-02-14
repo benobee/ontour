@@ -23,30 +23,6 @@ MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
     events.createIndex({ datetime: -1, 'venue.country': 1, 'venue.region': 1 });
     events.createIndex({ datetime: -1, 'venue.latitude': 1, 'venue.longitude': 1 });
 
-    const query = events.find({"location": { $exists: false}});
-/*    const bulk = events.initializeUnorderedBulkOp();
-    const items = bulk.find({"location": { $exists: false}});
-
-    for (var i = 1; i <= 1500; i++) {
-        console.log(i);
-    }*/    
-
-    query.toArray((err, results) => {
-        results.forEach((item) => { 
-            const point = {
-                type: "Point",
-                coordinates: [item.venue.longitude, item.venue.latitude]
-            };
-
-            events.updateOne( 
-                {"_id": item._id},
-                { $set: {"location": point} }
-            ); 
-        });
-
-        console.log("COUNT: ", results.length);
-    }) 
-/*
     app.get('/api/events', (req, res) => {
         let params = {};
 
@@ -70,5 +46,5 @@ MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
             results = methods.compileTags(results);
             res.send(results);
         });
-    })*/
+    })
 });

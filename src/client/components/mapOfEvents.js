@@ -69,9 +69,15 @@ const mapOfEvents = () => {
              * [setMapEvents description]
              */
 
-            setMapEvents () {
+            async setMapEvents () {
                 Events.on("map-loaded", (config) => this.loadEvents(config));
-                Events.on("map_interaction", this.interactEvents);
+                Events.on("map_interaction", (e) => {
+                    this.interactEvents(e);
+                });
+                Events.on("points-updated", (response) => {
+                    console.log({ response: response.data });
+                    this.setMarkersToMap(response.data, response.options);
+                });
             },
 
             /**
@@ -79,12 +85,8 @@ const mapOfEvents = () => {
              * @return {[type]} [description]
              */
 
-            bindGoogleMapEvents () {
-                if (this.google.map.zoom >= 7) {
-                    if (!this.updating) {
-                        Events.emit("map_interaction", this.google.map);
-                    }
-                }
+            bindGoogleMapEvents (eventType) {
+                Events.emit("map_interaction", { map: this.google.map, eventType });
             },
 
             /**
@@ -93,38 +95,49 @@ const mapOfEvents = () => {
              * @return {[type]}         [description]
              */
 
-            loadEvents (google) {
+            async loadEvents (google) {
                 this.google = google;
                 setTimeout(() => {
-                    const bounds = this.calculateBoundsCoords(this.google.map);
-
-                    this.api("/api/events", {
-                        sort: {
-                            datetime: -1
-                        },
-                        search: {
-
-                            location: {
-                                $geoWithin: {
-                                    $box: [
-                                        [bounds.SW.lng, bounds.SW.lat],
-                                        [bounds.NE.lng, bounds.NE.lat]
-                                    ]
-                                }
-                            }
-                        }
-                    }).then((response) => {
-                        if (response) {
-                            console.log({ response: response.data });
-                            this.setMarkersToMap(response.data, { noise: true });
-                            this.google.map.addListener("zoom_changed", this.bindGoogleMapEvents);
-                            this.google.map.addListener("dragend", this.bindGoogleMapEvents);
-                        }
-
-                    }).catch((err) => {
-                        console.log(err);
+                    this.google.map.addListener("zoom_changed", () => {
+                        this.bindGoogleMapEvents({ eventType: "zoom" });
+                    });
+                    this.google.map.addListener("dragend", () => {
+                        this.bindGoogleMapEvents({ eventType: "drag" });
                     });
                 }, 50);
+            },
+
+            getPointsWithinBounds (options) {
+                const bounds = this.calculateBoundsCoords(this.google.map);
+                const config = {
+                    sort: {
+                        datetime: -1
+                    },
+                    limit: 2000000
+                };
+
+                Object.assign(config, options);
+                this.api("/api/events", {
+                    sort: config.sort,
+                    search: {
+                        location: {
+                            $geoWithin: {
+                                $box: [
+                                    [bounds.SW.lng, bounds.SW.lat],
+                                    [bounds.NE.lng, bounds.NE.lat]
+                                ]
+                            }
+                        }
+                    },
+                    limit: config.limit
+                }).then((response) => {
+                    if (response) {
+                        Events.emit("points-updated", { options, data: response.data });
+                    }
+
+                }).catch((err) => {
+                    console.log(err);
+                });
             },
 
             /**
@@ -133,14 +146,14 @@ const mapOfEvents = () => {
              * @param {[type]} options [description]
              */
 
-            setMarkersToMap (points, options) {
+            async setMarkersToMap (points, options) {
                 const clusterer = this.getClusterer(points, options);
 
                 this.points = points;
                 clusterer.then((googleMapMarkers) => {
                     this.clearMarkers();
                     this.setMap(this.google.map, googleMapMarkers);
-                    console.log({ markers: googleMapMarkers });
+                    this.updating = false;
                 }).catch((err) => {
                     console.log(err);
                 });
@@ -151,19 +164,27 @@ const mapOfEvents = () => {
              * @return {[type]} [description]
              */
 
-            interactEvents () {
+            async interactEvents () {
+                let labelWordCount = 1;
+                const zoom = this.google.map.zoom;
                 const geocoder = this.geocodeCenterOfMap();
-                const clusterer = this.getClusterer(this.points, { noise: true });
+
+                if (zoom >= 10 && zoom <= 12) {
+                    labelWordCount = 2;
+                } else if (zoom >= 13) {
+                    labelWordCount = 3;
+                }
+
+                if (zoom >= 8) {
+                    this.setMarkersToMap(this.points, { noise: true, labelWordCount });
+                } else {
+                    this.clearMarkers();
+                }
 
                 geocoder.then((location) => {
                     this.location = location;
                 });
-                clusterer.then((googleMapMarkers) => {
-                    this.clearMarkers();
-                    this.setMap(this.google.map, googleMapMarkers);
-                }).catch((err) => {
-                    console.log(err);
-                });
+
             },
 
             /**
@@ -172,7 +193,7 @@ const mapOfEvents = () => {
              * @param {[type]} googleMapMarkers [description]
              */
 
-            setMap (map, googleMapMarkers) {
+            async setMap (map, googleMapMarkers) {
                 if (googleMapMarkers) {
                     this.markers = googleMapMarkers;
                 }

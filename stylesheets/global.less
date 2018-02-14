@@ -1,3 +1,9 @@
+body{
+    margin:0;
+    *{
+        font-family: "Verdana";
+    }
+}
 .collection-list {
     display: flex;
     flex-wrap: wrap;
@@ -24,8 +30,24 @@
         }
     }
 }
-#interface{
-    height:10vh;
+#interface.menu{
+    height:55px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding:1em;
+    .menu__map-info{
+        display:flex;
+        .country, .region, .city{
+            font-size:12px;
+            margin-right:5px;
+            text-transform: uppercase;
+        }
+    }
+    .menu__nav-item{
+        max-width:40px;
+        cursor: pointer;
+    }
 }
 #map{
     height:90vh;

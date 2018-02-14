@@ -10,7 +10,8 @@ const customClusterer = (points, bounds, options) => {
 
     const config = {
         noise: false,
-        minPoints: 1
+        minPoints: 1,
+        labelWordCount: 2
     };
 
     Object.assign(config, options);
@@ -47,7 +48,7 @@ const customClusterer = (points, bounds, options) => {
             return Math.exp(minv + scale * (position - minp));
         },
         createGmapsMarker (coordinates, tags) {
-            const topTags = tags.slice(0, 3);
+            const topTags = tags.slice(0, config.labelWordCount);
             const labels = `${topTags.map((tag) => {
                     return tag.name;
                 }).join(", ")}`;

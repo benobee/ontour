@@ -144,12 +144,12 @@ const maps = (target) => {
             }
 
             const map = new google.maps.Map(targetElement, {
-                zoom: 5,
+                zoom: 7,
                 center: { lat: 47.6062, lng: -122.3321 },
                 styles
             });
 
-            map.setOptions({ minZoom: 4, maxZoom: 19 });
+            map.setOptions({ minZoom: 5, maxZoom: 17 });
 
             const services = {
                 geocoder: new google.maps.Geocoder(map),
