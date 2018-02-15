@@ -27,8 +27,9 @@ MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
         let params = {};
 
         if (req.query.search) {
-            params = JSON.parse(req.query.search);
+            params = JSON.parse(req.query.search);            
         }
+        
         //FIND
         const query = events.find(params);
 

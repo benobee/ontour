@@ -107,28 +107,44 @@ const mapOfEvents = () => {
                 }, 50);
             },
 
+            /**
+             * [getPointsWithinBounds description]
+             * @param  {[type]} options [description]
+             * @return {[type]}         [description]
+             */
+
             getPointsWithinBounds (options) {
                 this.updating = true;
                 const bounds = this.calculateBoundsCoords(this.google.map);
                 const config = {
                     sort: {
                         datetime: -1
-                    },
-                    limit: 2000000
+                    }
                 };
 
                 Object.assign(config, options);
                 this.api("/api/events", {
                     sort: config.sort,
                     search: {
-                        location: {
-                            $geoWithin: {
-                                $box: [
-                                    [bounds.SW.lng, bounds.SW.lat],
-                                    [bounds.NE.lng, bounds.NE.lat]
+                        $and: [{
+                                location: {
+                                    $geoWithin: {
+                                        $box: [
+                                            [bounds.SW.lng, bounds.SW.lat],
+                                            [bounds.NE.lng, bounds.NE.lat]
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $and: [{
+                                        datetime: {
+                                            $gt: "2015-01-01T00:00:00"
+                                        }
+                                    }
                                 ]
                             }
-                        }
+                        ]
                     },
                     limit: config.limit
                 }).then((response) => {
@@ -205,9 +221,9 @@ const mapOfEvents = () => {
 
             /**
              * [getClusterer description]
-             * @param  {[type]} points  [description]
-             * @param  {[type]} options [description]
-             * @return {[type]}         [description]
+             * @param  {Array} points  [description]
+             * @param  {Object} options [description]
+             * @return {Promise}         [description]
              */
 
             async getClusterer (points, options) {
@@ -363,13 +379,14 @@ const mapOfEvents = () => {
 
             geocode () {
                 const centerOfMap = this.google.map.getCenter();
+                const bounds = this.google.map.getBounds();
                 const location = {
                     lat: centerOfMap.lat(),
                     lng: centerOfMap.lng()
                 };
 
                 const promise = new Promise((resolve) => {
-                    this.google.services.geocoder.geocode({ location }, (results) => {
+                    this.google.services.geocoder.geocode({ location, bounds }, (results) => {
                         resolve(results);
                     });
                 });
