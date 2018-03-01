@@ -1,0 +1,49 @@
+<div class="map-wrapper">
+    <div id="interface">
+        <div class="menu" v-bind:class="{loading: this.updating}">
+            <div class="menu__map-info">
+            </div>
+            <div class="menu__nav-item" v-on:click="getPointsWithinBounds">
+                <div class="menu__icon search">
+                    <i class="fas fa-search fa-2x" aria-hidden="true"></i>
+                </div>
+            </div>
+            <div class="menu__nav-item">
+                <div class="menu__icon spin">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+        <div class="meta-info">
+            <div class="meta-info__box-group" v-bind:class="{active: item.properties.selected}" v-for="(item, index) in markers" v-on:click="toggleActiveStateOnMarker(index)">
+                <div class="meta-info__box">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <label>Top Genres</label>
+                    <div class="meta-info__tags">
+                        <div class="meta-info__tag">
+                            <div class="meta-info__tag__name">{{item.properties.topTags}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="meta-info__box full-width">
+                    <label>Artists</label>
+                    <div class="meta-info__media-list">
+                        <div class="meta-info__media-object" v-for="artist in item.properties.artists.slice(0, 10)" :key="artist.id">
+                            <div class="meta-info__media-link" :data-href="'spotify:artist:' + artist.id">
+                                <div class="meta-info__media-content">
+                                    <div class="meta-info__media-wrapper" v-for="image in artist.images.slice(0,1)">
+                                        <img :src="image.url | img">
+                                    </div>
+                                    <div class="meta-info__title meta-info__item">
+                                        {{artist.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="map"></div>
+</div>

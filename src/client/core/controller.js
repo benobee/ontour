@@ -1,9 +1,9 @@
 import Vue from "vue";
-import mapOfEvents from "../components/mapOfEvents";
+import geoEventClusters from "../components/geoEventClusters";
 
 const controller = {
-    init (data) {
-        return new Vue(mapOfEvents(data));
+    init () {
+        return new Vue(geoEventClusters);
     }
 };
 

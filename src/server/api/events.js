@@ -19,33 +19,68 @@ MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
 
     const events = db.collection("events");
 
-    events.createIndex({ datetime: -1 });
-    events.createIndex({ datetime: -1, 'venue.country': 1, 'venue.region': 1 });
-    events.createIndex({ datetime: -1, 'venue.latitude': 1, 'venue.longitude': 1 });
-
     app.get('/api/events', (req, res) => {
         let params = {};
 
+        // Cursor Query
         if (req.query.search) {
-            params = JSON.parse(req.query.search);            
-        }
-        
-        //FIND
-        const query = events.find(params);
+            params = JSON.parse(req.query.search);
+            // Find
+            const query = events.aggregate([{
+                    $sort: { "datetime": -1 }
+                },
+                {
+                    $lookup: {
+                        from: "artists",
+                        localField: "ontour_id",
+                        foreignField: "_id",
+                        as: "artist"
+                    }
+                },
+                {
+                    $unwind: "$artist"
+                },
+                {
+                    $project: {
+                        "artist.data.name": 1,
+                        "artist.data.images": 1,
+                        "artist.data.uri": 1,
+                        "artist.data.id": 1,
+                        "artist.data.genres": 1,
+                        "artist.data.popularity": 1,
+                        "artist.data.genres": 1,
+                        "artist.avg_tickets_sold": 1,
+                        "location": 1,
+                        "genres": 1,
+                        "venue": 1,
+                        "datetime": 1,
+                        "title": 1
+                    }
+                },
+                {
+                    $match: params
+                }
+            ],
+            { allowDiskUse: true });
 
-        //SORT
-        if (req.query.sort) {
-            query.sort(JSON.parse(req.query.sort));
-        }
-        // LIMIT
-        if (req.query.limit) {
-            query.limit(Number(req.query.limit));
-        }
+            // Sort
+            if (req.query.sort) {
+                query.sort(JSON.parse(req.query.sort));
+            }
 
-        //TO ARRAY
-        query.toArray((err, results) => {
-            results = methods.compileTags(results);
-            res.send(results);
-        });
+            // Limit
+            if (req.query.limit) {
+                query.limit(Number(req.query.limit));
+            }
+
+            // To Array
+            query.toArray((err, results) => {
+                if (err) {
+                    console.log(err);
+                }
+                results = methods.compileTags(results);
+                res.send(results);
+            });
+        }
     })
 });

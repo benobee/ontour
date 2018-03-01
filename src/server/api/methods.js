@@ -6,12 +6,8 @@ const methods = {
             let hasVenue = false;
 
             if (item.venue) {
-                Object.assign(item, item.venue);
-                item.coords = [item.longitude, item.latitude];
-
-                delete item.longitude;
-                delete item.latitude;
-                delete item.venue;
+                item.coords = [item.location.coordinates[ 0 ], item.location.coordinates[ 1 ]];
+                delete item.location;
                 hasVenue = item;
             }
             return hasVenue;
