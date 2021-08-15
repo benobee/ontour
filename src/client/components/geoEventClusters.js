@@ -1,9 +1,9 @@
 import templateHTML from "./geoEventClusters.html";
 import googleMapsClient from "../lib/googleMaps";
-import axios from "axios";
 import PubSub from "../core/events";
 import customClusterer from "../lib/clusterer";
 import _ from "underscore";
+import { getEventsByGeoBoundary } from "../services/geoEvents";
 const turf = require("@turf/turf");
 
 /**
@@ -52,22 +52,6 @@ const geoEventClusters = {
         }
     },
     methods: {
-
-        /**
-         * the initial startup method. Initiates the google map,
-         * then sets map events.
-         * @memberOf geoEventClusters
-         */
-
-        init () {
-            const initGoogleMap = googleMapsClient("#map");
-
-            initGoogleMap.then((response) => {
-                this.setMapEvents();
-                events.emit("map-loaded", response);
-            });
-        },
-
         /**
          * Switches the active state for the UI to
          * indicate which point is being selected.
@@ -95,6 +79,15 @@ const geoEventClusters = {
             icon.fillColor = "hsl(349, 96%, 66%)";
             icon.strokeColor = "hsl(349, 96%, 66%)";
             this.markers[ index ].setIcon(icon);
+            const data = this.markers[ index ].properties;
+
+            console.log({
+                numberOfArtists: data.artists.length,
+                numberOfEvents: data.events.length,
+                popularityAvg: data.popularity.avg,
+                ticketsSoldAvg: data.ticketsSold.avg,
+                topTags: data.topTags,
+            });
         },
 
         /**
@@ -144,68 +137,16 @@ const geoEventClusters = {
         },
 
         /**
-         * [api description]
-         * @param  {[type]} url    [description]
-         * @param  {[type]} params [description]
-         * @return {[type]}        [description]
-         */
-
-        api (url, params) {
-            return axios.get(url, {
-                    headers: {
-                        "Cache-Control": "no-cache, no-store, must-revalidate",
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"
-                    },
-                    params
-                })
-                .catch((error) => {
-                    if (error.response) {
-                        console.log(error);
-                    }
-                });
-        },
-
-
-        /**
          * [setMapEvents description]
          */
 
         setMapEvents () {
-            events.on("map-loaded", (config) => this.loadEvents(config));
-            events.on("map_interaction", (e) => {
+            events.on("map-interaction", (e) => {
                 this.interactEvents(e);
             });
-            events.on("points-updated", (response) => {
+            events.on("map-updated", (response) => {
                 this.setMarkersToMap(response.data, response.options);
             });
-        },
-
-        /**
-         * [bindGoogleMapEvents description]
-         * @return {[type]} [description]
-         */
-
-        bindGoogleMapEvents (eventType) {
-            events.emit("map_interaction", { map: this.google.map, eventType });
-        },
-
-        /**
-         * [loadEvents description]
-         * @param  {[type]} options [description]
-         * @return {[type]}         [description]
-         */
-
-        loadEvents (google) {
-            this.google = google;
-            setTimeout(() => {
-                this.google.map.addListener("zoom_changed", () => {
-                    this.bindGoogleMapEvents({ eventType: "zoom" });
-                });
-                this.google.map.addListener("dragend", () => {
-                    this.bindGoogleMapEvents({ eventType: "drag" });
-                });
-            }, 4000);
         },
 
         /**
@@ -214,43 +155,21 @@ const geoEventClusters = {
          * @return {[type]}         [description]
          */
 
-        getPointsWithinBounds () {
+        async getPointsWithinBounds () {
+            this.clearMarkers();
+            this.markers = [];
             this.updating = true;
             const bounds = this.calculateBoundsCoords(this.google.map);
 
-            this.api("/api/events", {
-                sort: {
-                    events: -1
-                },
-                search: {
-                    $and: [{
-                            location: {
-                                $geoWithin: {
-                                    $box: [
-                                        [bounds.SW.lng, bounds.SW.lat],
-                                        [bounds.NE.lng, bounds.NE.lat]
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            $and: [{
-                                datetime: {
-                                    $gt: "2016-01-01T00:00:00"
-                                }
-                            }]
-                        },
-                    ]
-                }
-            }).then((response) => {
-                this.updating = false;
-                if (response) {
-                    events.emit("points-updated", { data: response.data });
-                }
+            try {
+                const response = await getEventsByGeoBoundary(bounds);
 
-            }).catch((err) => {
+                events.emit("map-updated", { data: response.data || null });
+            } catch (err) {
                 console.log(err);
-            });
+            } finally {
+                this.updating = false;
+            }
         },
 
         /**
@@ -365,7 +284,18 @@ const geoEventClusters = {
         }
     },
     mounted () {
-        this.init();
+        const initGoogleMap = googleMapsClient("#map");
+
+        initGoogleMap.then((google) => {
+            this.setMapEvents();
+            this.google = google;
+            this.google.map.addListener("zoom_changed", () => {
+                events.emit("map-interaction", { map: this.google.map, eventType: "zoom" });
+            });
+            this.google.map.addListener("dragend", () => {
+                events.emit("map-interaction", { map: this.google.map, eventType: "drag" });
+            });
+        });
     }
 };
 

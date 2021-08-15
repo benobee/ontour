@@ -2,26 +2,26 @@ const _ = require('underscore');
 
 const methods = {
     compileTags(array) {
-        let venues = array.filter((item) => {
+        let geoEventGroup = array.filter((item) => {
             let hasVenue = false;
 
             if (item.venue) {
                 item.coords = [item.location.coordinates[ 0 ], item.location.coordinates[ 1 ]];
                 delete item.location;
-                hasVenue = item;
+                hasVenue = true;
             }
             return hasVenue;
         });
 
-        venues = _.groupBy(array, "coords");
-        const venueList = [];
+        geoEventGroup = _.groupBy(array, "coords");
+        const mappedGeoEvent = [];
 
-        for (const i in venues) {
-            if (venues[i][0]) {
+        for (const i in geoEventGroup) {
+            if (geoEventGroup[i][0]) {
                 //compile the music genre tags
                 let tagList = [];
 
-                venues[i].forEach((item) => {
+                geoEventGroup[i].forEach((item) => {
                     tagList = tagList.concat(item.genres);
                 });
                 tagList = _.map(_.groupBy(tagList), (item) => {
@@ -36,22 +36,23 @@ const methods = {
 
                 const item = {
                     genres: tagList,
-                    name: venues[i][0].name,
-                    events: venues[i],
-                    lat: venues[i][0].coords[ 0 ],
-                    lng: venues[i][0].coords[ 1 ],
-                    location: venues[i][0].location
+                    name: geoEventGroup[i][0].name,
+                    events: geoEventGroup[i],
+                    lat: geoEventGroup[i][0].coords[ 0 ],
+                    lng: geoEventGroup[i][0].coords[ 1 ],
+                    location: geoEventGroup[i][0].location
                 };
 
                 if (tagList.length >= 5) {
-                    venueList.push(item);
+                    mappedGeoEvent.push(item);
                 }
             }
         }
 
-        return venueList.filter((item) => {
-            return item.events.length > 1
-        });
+        return mappedGeoEvent
+            .filter((item) => {
+                return item.events.length > 1
+            })
     }
 }
 

@@ -3,13 +3,9 @@ const app = require('../app/app');
 const mongoose = require('mongoose');
 const methods = require('./methods');
 
-// SCHEMA
-mongoose.connect('mongodb://localhost:27017/ontour');
-const Schema = mongoose.Schema;
-const ObjectId = Schema.ObjectId;
-
 // DB CONNECT
 MongoClient.connect('mongodb://localhost:27018/ontour', (err, client) => {
+    if (err) throw err;
     console.log("Connected successfully to server");
     const db = client.db("ontour");
 

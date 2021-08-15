@@ -1,9 +1,9 @@
-const MongoClient = require('mongodb').MongoClient;
-const app = require('../app/app');
-const axios = require('axios');
-const fs = require('fs');
+const MongoClient = require('mongodb').MongoClient
+const app = require('../app/app')
+const axios = require('axios')
+const fs = require('fs')
 
-function mapAristsWithEvents(artists, artistEvents, results) {
+module.exports = function mapAristsWithEvents(artists, artistEvents, results) {
     const getData = (index) => {
         console.log(results[index].name);
         axios.get(`https://api.bandsintown.com/artists/${encodeURIComponent(results[ index ].name)}/events.json?api_version=2.0&app_id=ONTOUR_1638&date=all`)
@@ -38,6 +38,7 @@ function mapAristsWithEvents(artists, artistEvents, results) {
 }
 
 MongoClient.connect('mongodb://localhost:27018/ontour', (err, client) => {
+    if (err) throw err;
     console.log("Connected successfully to server");
     const db = client.db("ontour");
 
