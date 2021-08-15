@@ -3,7 +3,7 @@
         <div v-for="item in list" class="collection-list__item" :key="item.id" v-if="item.data">
             <div class="media-wrapper" v-if="item.data">
                 <div class="image" v-if="item.data.images">
-                    <img v-bind:src="item.data.images | img" />
+                    <img v-bind:src="item.data.images | img" alt=""/>
                 </div>
             </div>
             <div class="meta-info">

@@ -1,5 +1,5 @@
 {
-  "name": "sqs-build",
+  "name": "ontour",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -10,7 +10,7 @@
     "build": "set PROD_ENV=true && set process.env='production' && webpack -p&&documentation build --output ./README.md --format md",
     "client": "webpack-dev-server ./src/client/main.js --hot --watch --colors",
     "server": "nodemon --max-old-space-size=20480 ./src/server/main.js localhost 3000",
-    "db": "mongod --dbpath C:/users/obee-ssd/dev/ontour/db --bind_ip 127.0.0.1",
+    "db": "mongod --dbpath ~/data/db --bind_ip 127.0.0.1 --port 27018",
     "dev": "concurrently --kill-others \"npm run client\" \"npm run server\" \"npm run db\"",
     "kill": "taskkill /f /im node.exe",
     "stopserver": "forever stopall"
@@ -75,6 +75,7 @@
     "load-google-maps": "^1.0.0",
     "load-script-global": "^1.0.2",
     "mongodb": "^3.0.1",
+    "mongoose": "^5.13.7",
     "socket.io": "^2.0.4",
     "socket.io-client": "^2.0.4",
     "supercluster": "^3.0.2",

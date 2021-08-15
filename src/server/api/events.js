@@ -9,14 +9,15 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 // DB CONNECT
-MongoClient.connect('mongodb://localhost:27017/ontour', (err, client) => {
+MongoClient.connect('mongodb://localhost:27018/ontour', (err, client) => {
     console.log("Connected successfully to server");
     const db = client.db("ontour");
 
-    db.createCollection("events", (err, response) => {
-        if (err) throw err;
-    });
-
+    if (!db.collection("events")) {
+        db.createCollection("events", (err) => {
+            if (err) throw err;
+        });
+    }
     const events = db.collection("events");
 
     app.get('/api/events', (req, res) => {

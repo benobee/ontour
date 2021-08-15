@@ -32,7 +32,7 @@
                             <div class="meta-info__media-link" :data-href="'spotify:artist:' + artist.id">
                                 <div class="meta-info__media-content">
                                     <div class="meta-info__media-wrapper" v-for="image in artist.images.slice(0,1)">
-                                        <img :src="image.url | img">
+                                        <img :src="image.url | img" alt="">
                                     </div>
                                     <div class="meta-info__title meta-info__item">
                                         {{artist.name}}

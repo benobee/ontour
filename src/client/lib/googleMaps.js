@@ -132,7 +132,8 @@ const maps = (target) => {
             jsonp: true
         }, (err, google) => {
             if (err) {
-                console.log(reject());
+                console.log(err);
+                reject();
             }
 
             let targetElement = {};

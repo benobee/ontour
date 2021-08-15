@@ -11,7 +11,7 @@ const turf = require("@turf/turf");
  * @return {[type]} [description]
  */
 
-const Events = new PubSub();
+const events = new PubSub();
 const geoEventClusters = {
     template: templateHTML,
     el: "#app",
@@ -64,7 +64,7 @@ const geoEventClusters = {
 
             initGoogleMap.then((response) => {
                 this.setMapEvents();
-                Events.emit("map-loaded", response);
+                events.emit("map-loaded", response);
             });
         },
 
@@ -150,7 +150,7 @@ const geoEventClusters = {
          * @return {[type]}        [description]
          */
 
-        async api (url, params) {
+        api (url, params) {
             return axios.get(url, {
                     headers: {
                         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -171,13 +171,12 @@ const geoEventClusters = {
          * [setMapEvents description]
          */
 
-        async setMapEvents () {
-            Events.on("map-loaded", (config) => this.loadEvents(config));
-            Events.on("map_interaction", (e) => {
+        setMapEvents () {
+            events.on("map-loaded", (config) => this.loadEvents(config));
+            events.on("map_interaction", (e) => {
                 this.interactEvents(e);
             });
-            Events.on("points-updated", (response) => {
-                console.log({ response: response.data });
+            events.on("points-updated", (response) => {
                 this.setMarkersToMap(response.data, response.options);
             });
         },
@@ -188,7 +187,7 @@ const geoEventClusters = {
          */
 
         bindGoogleMapEvents (eventType) {
-            Events.emit("map_interaction", { map: this.google.map, eventType });
+            events.emit("map_interaction", { map: this.google.map, eventType });
         },
 
         /**
@@ -197,7 +196,7 @@ const geoEventClusters = {
          * @return {[type]}         [description]
          */
 
-        async loadEvents (google) {
+        loadEvents (google) {
             this.google = google;
             setTimeout(() => {
                 this.google.map.addListener("zoom_changed", () => {
@@ -206,7 +205,7 @@ const geoEventClusters = {
                 this.google.map.addListener("dragend", () => {
                     this.bindGoogleMapEvents({ eventType: "drag" });
                 });
-            }, 50);
+            }, 4000);
         },
 
         /**
@@ -241,28 +240,12 @@ const geoEventClusters = {
                                 }
                             }]
                         },
-                        /*                            {
-                                                        genres: {
-                                                            $in: [
-                                                                "alternative country",
-                                                                "anti-folk",
-                                                                "canadian indie",
-                                                                "chamber pop",
-                                                                "folk",
-                                                                "folk-pop",
-                                                                "freak folk",
-                                                                "indie pop",
-                                                                "indie rock",
-                                                                "lo-fi"
-                                                            ]
-                                                        }
-                                                    }*/
                     ]
                 }
             }).then((response) => {
                 this.updating = false;
                 if (response) {
-                    Events.emit("points-updated", { data: response.data });
+                    events.emit("points-updated", { data: response.data });
                 }
 
             }).catch((err) => {
@@ -276,7 +259,7 @@ const geoEventClusters = {
          * @param {[type]} options [description]
          */
 
-        async setMarkersToMap (points, options) {
+        setMarkersToMap (points, options) {
             const clusterer = this.getClusterer(points, options);
 
             this.points = points;
@@ -293,15 +276,8 @@ const geoEventClusters = {
          * @return {[type]} [description]
          */
 
-        async interactEvents () {
-            //let labelWordCount = 1;
+        interactEvents () {
             const zoom = this.google.map.zoom;
-            /*
-                            if (zoom >= 10 && zoom <= 12) {
-                                labelWordCount = 2;
-                            } else if (zoom >= 13) {
-                                labelWordCount = 3;
-                            }*/
 
             if (zoom >= 7) {
                 this.setMarkersToMap(this.points, { noise: true });
@@ -316,7 +292,7 @@ const geoEventClusters = {
          * @param {[type]} googleMapMarkers [description]
          */
 
-        async setMap (map, googleMapMarkers) {
+        setMap (map, googleMapMarkers) {
             if (googleMapMarkers) {
                 this.markers = this.geoMarkerEventCluster(googleMapMarkers);
             }
@@ -332,7 +308,7 @@ const geoEventClusters = {
          * @return {Promise}         [description]
          */
 
-        async getClusterer (points, options) {
+        getClusterer (points, options) {
             const bounds = this.calculateBoundsCoords(this.google.map);
             const clusterer = customClusterer(points, bounds, options);
 
