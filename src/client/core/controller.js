@@ -1,5 +1,5 @@
 import Vue from "vue";
-import geoEventClusters from "../components/geoEventClusters";
+import { geoEventClusters } from "../components";
 
 const controller = {
     init () {

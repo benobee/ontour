@@ -1,11 +1,11 @@
 import controller from "./core/controller";
+import PubSub from "./core/events";
 
-const App = {
+class App {
     init () {
         controller.init();
-    },
-};
+    }
+}
 
-App.init();
-
-export default App;
+export const eventEmitter = new PubSub();
+export const app = new App().init();

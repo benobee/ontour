@@ -1,9 +1,9 @@
 import templateHTML from "./geoEventClusters.html";
-import googleMapsClient from "../lib/googleMaps";
-import PubSub from "../core/events";
-import customClusterer from "../lib/clusterer";
+import googleMapsClient from "../../lib/googleMaps";
+import { eventEmitter } from "../../main";
+import customClusterer from "../../lib/clusterer";
 import _ from "underscore";
-import { getEventsByGeoBoundary } from "../services/geoEvents";
+import { getEventsByGeoBoundary } from "../../services/geoEvents";
 const turf = require("@turf/turf");
 
 /**
@@ -11,7 +11,6 @@ const turf = require("@turf/turf");
  * @return {[type]} [description]
  */
 
-const events = new PubSub();
 const geoEventClusters = {
     template: templateHTML,
     el: "#app",
@@ -137,19 +136,6 @@ const geoEventClusters = {
         },
 
         /**
-         * [setMapEvents description]
-         */
-
-        setMapEvents () {
-            events.on("map-interaction", (e) => {
-                this.interactEvents(e);
-            });
-            events.on("map-updated", (response) => {
-                this.setMarkersToMap(response.data, response.options);
-            });
-        },
-
-        /**
          * [getPointsWithinBounds description]
          * @param  {[type]} options [description]
          * @return {[type]}         [description]
@@ -164,7 +150,7 @@ const geoEventClusters = {
             try {
                 const response = await getEventsByGeoBoundary(bounds);
 
-                events.emit("map-updated", { data: response.data || null });
+                eventEmitter.emit("map-updated", { data: response.data || null });
             } catch (err) {
                 console.log(err);
             } finally {
@@ -283,17 +269,23 @@ const geoEventClusters = {
             return bounds;
         }
     },
+
     mounted () {
         const initGoogleMap = googleMapsClient("#map");
 
         initGoogleMap.then((google) => {
-            this.setMapEvents();
+            eventEmitter.on("map-interaction", (e) => {
+                this.interactEvents(e);
+            });
+            eventEmitter.on("map-updated", (response) => {
+                this.setMarkersToMap(response.data, response.options);
+            });
             this.google = google;
             this.google.map.addListener("zoom_changed", () => {
-                events.emit("map-interaction", { map: this.google.map, eventType: "zoom" });
+                eventEmitter.emit("map-interaction", { map: this.google.map, eventType: "zoom" });
             });
             this.google.map.addListener("dragend", () => {
-                events.emit("map-interaction", { map: this.google.map, eventType: "drag" });
+                eventEmitter.emit("map-interaction", { map: this.google.map, eventType: "drag" });
             });
         });
     }
