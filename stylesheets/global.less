@@ -43,6 +43,7 @@ body {
 
 .map-wrapper {
     display: flex;
+    height:100vh;
 }
 
 .menu {
@@ -196,10 +197,15 @@ body {
 }
 
 #interface {
-    width: 150px;
+    width: 20vw;
+    max-width: 300px;
 }
 
 #map {
     height: 100vh;
     width: 100%;
+    overflow: hidden;
+    .gm-style{
+        text-shadow: 1px 1px 1px white;
+    }
 }

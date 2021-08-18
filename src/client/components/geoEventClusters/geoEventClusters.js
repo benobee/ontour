@@ -1,15 +1,10 @@
 import templateHTML from "./geoEventClusters.html";
 import googleMapsClient from "../../lib/googleMaps";
-import { eventEmitter } from "../../main";
 import customClusterer from "../../lib/clusterer";
 import _ from "underscore";
 import { getEventsByGeoBoundary } from "../../services/geoEvents";
+import geocodePlaces from "../../lib/geocodePlaces";
 const turf = require("@turf/turf");
-
-/**
- * [description]
- * @return {[type]} [description]
- */
 
 const geoEventClusters = {
     template: templateHTML,
@@ -17,6 +12,7 @@ const geoEventClusters = {
     data () {
         return {
             google: {},
+            placesService: null,
             markers: [],
             points: [],
             location: {
@@ -25,12 +21,14 @@ const geoEventClusters = {
                 city: ""
             },
             updating: false,
+            fetchInProgress: false,
             layer: {
                 close: [],
                 far: []
             }
         };
     },
+
     filters: {
 
         /**
@@ -51,13 +49,6 @@ const geoEventClusters = {
         }
     },
     methods: {
-        /**
-         * Switches the active state for the UI to
-         * indicate which point is being selected.
-         * @param  {Number} index the index of the marker list
-         * @return {Object}      The google marker with the updated colors.
-         */
-
         toggleActiveStateOnMarker (index) {
             //reset all the icons to the default state
             this.markers = this.markers.map((marker) => {
@@ -84,50 +75,41 @@ const geoEventClusters = {
                 numberOfArtists: data.artists.length,
                 numberOfEvents: data.events.length,
                 popularityAvg: data.popularity.avg,
-                ticketsSoldAvg: data.ticketsSold.avg,
+                ticketsSoldAvg: data.ticketsSold ? data.ticketsSold.avg : 0,
                 topTags: data.topTags,
             });
         },
 
-        /**
-         *
-         * @return {Array} [description]
-         */
-
         geoMarkerEventCluster (array) {
             array = _.sortBy(array, (item) => {
-                return item.properties.tags.length;
+                return item.hasOwnProperty("properties") && item.properties.tags.length;
             }).reverse();
             if (array[ 0 ]) {
                 array.map((marker, index) => {
-                    const topTags = marker.properties.tags.slice(0, 3).map((tag) => {
-                        return tag.name;
-                    });
+                    if (marker.hasOwnProperty("properties")) {
+                        const topTags = marker.properties.tags.slice(0, 3).map((tag) => {
+                            return tag.name;
+                        });
 
-                    marker.addListener("click", () => {
-                        this.toggleActiveStateOnMarker(index);
-                    });
-                    marker.properties.topTags = topTags.join(", ");
-                    marker.properties.artists = this.groupTopArtists(marker, topTags);
-
+                        marker.properties.topTags = topTags.join(", ");
+                        marker.properties.artists = this.groupTopArtists(marker, topTags);
+                        marker.addListener("click", () => {
+                            this.toggleActiveStateOnMarker(index);
+                        });
+                    }
                     return marker;
                 });
             }
             return array;
         },
 
-        /**
-         * [groupTopArtists description]
-         * @param  {[type]} marker  [description]
-         * @param  {[type]} topTags [description]
-         * @return {[type]}         [description]
-         */
-
         groupTopArtists (marker, topTags) {
             return marker.properties.artists.filter((artist) => {
                 let artistWithTopTags = false;
 
-                if (artist.genres.indexOf(topTags[ 0 ]) !== -1 || artist.genres.indexOf(topTags[ 1 ]) !== -1 || artist.genres.indexOf(topTags[ 2 ]) !== -1) {
+                if (artist.genres.indexOf(topTags[ 0 ]) !== -1 ||
+                    artist.genres.indexOf(topTags[ 1 ]) !== -1 ||
+                    artist.genres.indexOf(topTags[ 2 ]) !== -1) {
                     artistWithTopTags = artist;
                 }
 
@@ -135,51 +117,76 @@ const geoEventClusters = {
             });
         },
 
-        /**
-         * [getPointsWithinBounds description]
-         * @param  {[type]} options [description]
-         * @return {[type]}         [description]
-         */
-
-        async getPointsWithinBounds () {
-            this.clearMarkers();
-            this.markers = [];
-            this.updating = true;
-            const bounds = this.calculateBoundsCoords(this.google.map);
-
-            try {
-                const response = await getEventsByGeoBoundary(bounds);
-
-                eventEmitter.emit("map-updated", { data: response.data || null });
-            } catch (err) {
-                console.log(err);
-            } finally {
-                this.updating = false;
+        getRecords () {
+            if (this.google.map.zoom >= 7) {
+                this.updating = true;
+                this.getPointsWithinBounds();
             }
         },
 
-        /**
-         * [setMarkersToMap description]
-         * @param {[type]} points  [description]
-         * @param {[type]} options [description]
-         */
+        async getPointsWithinBounds () {
+            try {
+                const pageSize = 50;
+                const bounds = this.calculateBoundsCoords();
+                const response = await getEventsByGeoBoundary(bounds);
+                const numberOfPages = Math.round(response.data.length / pageSize);
+                const paginated = [];
 
-        setMarkersToMap (points, options) {
-            const clusterer = this.getClusterer(points, options);
+                this.updating = false;
 
-            this.points = points;
-            clusterer.then((googleMapMarkers) => {
-                this.clearMarkers();
-                this.setMap(this.google.map, googleMapMarkers);
-            }).catch((err) => {
+                for (let i = 0; i < numberOfPages; i++) {
+                    const number = i === 0 ? 0 : 1;
+                    const page = response.data.slice(i * pageSize + i === 0 ? 0 : 1, ((i + 1) * pageSize) + number) || [];
+
+                    paginated.push(page);
+                }
+
+                this.setMarkersToMap(response.data);
+            } catch (err) {
                 console.log(err);
-            });
+            }
         },
 
-        /**
-         * [interactEvents description]
-         * @return {[type]} [description]
-         */
+        async setMarkersToMap (points, options) {
+            const bounds = this.calculateBoundsCoords(this.google.map);
+            const clusteredMarkers = await customClusterer(points, bounds, options);
+
+            this.clearMarkers();
+            this.points = points;
+            this.markers = [
+                ...this.markers,
+                ...this.geoMarkerEventCluster(clusteredMarkers)
+            ];
+            this.setMap();
+        },
+
+        async getVenueMarkers () {
+            const response = await this.placesService.getVenues();
+
+            return response.map((item) => {
+                return new google.maps.Marker({
+                    position: item.geometry.location,
+                    title: item.name,
+                    label: {
+                        text: item.name,
+                        fontWeight: "400",
+                        color: "hsla(0, 0%, 29%, 0.8)",
+                        fontSize: "10px"
+                    },
+                    icon: {
+                        path: "M-10,0a10,10 0 1,0 20,0a10,10 0 1,0 -20,0",
+                        fillColor: "#b73131",
+                        strokeColor: "#191919",
+                        scale: 0.4,
+                        fillOpacity: 0.8,
+                        strokeWeight: 1,
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(0, 0),
+                        labelOrigin: new google.maps.Point(0, 25)
+                    },
+                });
+            });
+        },
 
         interactEvents () {
             const zoom = this.google.map.zoom;
@@ -191,48 +198,22 @@ const geoEventClusters = {
             }
         },
 
-        /**
-         * [setMap description]
-         * @param {[type]} map              [description]
-         * @param {[type]} googleMapMarkers [description]
-         */
-
-        setMap (map, googleMapMarkers) {
-            if (googleMapMarkers) {
-                this.markers = this.geoMarkerEventCluster(googleMapMarkers);
-            }
+        setMap (props = {
+            clearMarkers: false,
+        }) {
             for (let i = 0; i < this.markers.length; i++) {
-                this.markers[ i ].setMap(map);
+                this.markers[ i ].setMap(props.clearMarkers ? null : this.google.map);
+            }
+            if (props.clearMarkers) {
+                this.markers = [];
             }
         },
-
-        /**
-         * [getClusterer description]
-         * @param  {Array} points  [description]
-         * @param  {Object} options [description]
-         * @return {Promise}         [description]
-         */
-
-        getClusterer (points, options) {
-            const bounds = this.calculateBoundsCoords(this.google.map);
-            const clusterer = customClusterer(points, bounds, options);
-
-            return clusterer;
-        },
-
-        /**
-         * [clearMarkers description]
-         * @return {[type]} [description]
-         */
 
         clearMarkers () {
-            this.setMap(null);
+            this.setMap({
+                clearMarkers: true,
+            });
         },
-
-        /**
-         * [calculateBoundsCoordsDistance description]
-         * @return {[type]} [description]
-         */
 
         createPolygonFromBounds (boundsCoords) {
             const line = turf.lineString([
@@ -246,16 +227,10 @@ const geoEventClusters = {
             return polygon;
         },
 
-        /**
-         * [calculateBoundsCoords description]
-         * @param  {[type]} map [description]
-         * @return {[type]}     [description]
-         */
+        calculateBoundsCoords () {
+            const bounds = this.google.map.getBounds();
 
-        calculateBoundsCoords (map) {
-            let bounds = map.getBounds();
-
-            bounds = {
+            return {
                 NE: {
                     lat: bounds.getNorthEast().lat(),
                     lng: bounds.getNorthEast().lng()
@@ -265,28 +240,22 @@ const geoEventClusters = {
                     lng: bounds.getSouthWest().lng()
                 }
             };
-
-            return bounds;
         }
     },
 
     mounted () {
         const initGoogleMap = googleMapsClient("#map");
 
-        initGoogleMap.then((google) => {
-            eventEmitter.on("map-interaction", (e) => {
-                this.interactEvents(e);
-            });
-            eventEmitter.on("map-updated", (response) => {
-                this.setMarkersToMap(response.data, response.options);
-            });
+        initGoogleMap.then(async (google) => {
             this.google = google;
             this.google.map.addListener("zoom_changed", () => {
-                eventEmitter.emit("map-interaction", { map: this.google.map, eventType: "zoom" });
+                this.interactEvents();
             });
             this.google.map.addListener("dragend", () => {
-                eventEmitter.emit("map-interaction", { map: this.google.map, eventType: "drag" });
+                this.interactEvents();
             });
+            this.placesService = geocodePlaces(google);
+            this.location = await this.placesService.getLocation();
         });
     }
 };

@@ -52,6 +52,7 @@ MongoClient.connect('mongodb://localhost:27018/ontour', (err, client) => {
     artists.find({ $and: [{ data: { $exists: true } }] }).sort({ 'data.popularity': -1 }).toArray((err, results) => {
         if (err) throw err;
         app.get('/api/artists', (req, res) => {
+            console.log(`returning artists results: ${results.data.length} records`);
             res.send(results);
         });
     });

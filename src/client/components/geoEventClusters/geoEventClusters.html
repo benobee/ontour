@@ -1,9 +1,12 @@
 <div class="map-wrapper">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Londrina+Outline&display=swap" rel="stylesheet"> 
     <div id="interface">
         <div class="menu" v-bind:class="{loading: this.updating}">
             <div class="menu__map-info">
             </div>
-            <div class="menu__nav-item" v-on:click="getPointsWithinBounds">
+            <div class="menu__nav-item" v-on:click="getRecords">
                 <div class="menu__icon search">
                     <i class="fas fa-search fa-2x" aria-hidden="true"></i>
                 </div>
@@ -15,7 +18,12 @@
             </div>
         </div>
         <div class="meta-info">
-            <div class="meta-info__box-group" v-bind:class="{active: item.properties.selected}" v-for="(item, index) in markers" v-on:click="toggleActiveStateOnMarker(index)">
+            <div class="meta-info__box-group" 
+                v-if="item.hasOwnProperty('properties')" 
+                v-bind:class="{active: item.hasOwnProperty('properties') && item.properties.selected}" 
+                v-for="(item, index) in markers" 
+                v-on:click="toggleActiveStateOnMarker(index)"
+            >
                 <div class="meta-info__box">
                     <i class="fas fa-map-marker-alt"></i>
                     <label>Top Genres</label>

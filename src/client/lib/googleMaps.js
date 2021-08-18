@@ -15,7 +15,7 @@ const styles = [{
     {
         elementType: "labels.text.fill",
         stylers: [{
-            color: "#616161"
+            color: "#a6a6a6"
         }]
     },
     {

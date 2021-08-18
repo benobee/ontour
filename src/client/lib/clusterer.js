@@ -103,7 +103,7 @@ const customClusterer = (points, bounds, options) => {
                     text: labels,
                     color: `hsla(0, 0%, 29%, ${0.5 + Math.floor(modifier * 0.07)})`,
                     fontSize: `${modifier}px`,
-                    fontWeight: "600"
+                    fontWeight: "600",
                 },
                 icon: {
                     path: "M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z",
@@ -116,7 +116,8 @@ const customClusterer = (points, bounds, options) => {
                     anchor: new google.maps.Point(200, 150),
                     labelOrigin: new google.maps.Point(0, 0),
                     labelAnchor: new google.maps.Point(0, 0)
-                }
+                },
+                optimized: true,
             });
 
             return marker;

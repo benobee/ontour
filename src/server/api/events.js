@@ -76,6 +76,7 @@ MongoClient.connect('mongodb://localhost:27018/ontour', (err, client) => {
                     console.log(err);
                 }
                 results = methods.compileTags(results);
+                console.log(`returning event results: ${results.length} records for the map boundary`);
                 res.send(results);
             });
         }

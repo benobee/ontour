@@ -38,7 +38,7 @@ const input = {
         './src/client/main.js', 
         './stylesheets/main.less'
     ],
-    devtool: isProduction ? '' : 'eval',
+    devtool: isProduction ? '' : 'eval-cheap-module-source-map',
     node: {
         dns: 'mock',
         net: 'mock',
