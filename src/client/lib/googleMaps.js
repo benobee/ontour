@@ -124,6 +124,8 @@ const styles = [{
     }
 ];
 
+export const INITIAL_ZOOM_LEVEL = 8;
+
 const maps = (target) => {
     const promise = new Promise((resolve, reject) => {
         load({
@@ -145,7 +147,7 @@ const maps = (target) => {
             }
 
             const map = new google.maps.Map(targetElement, {
-                zoom: 8,
+                zoom: INITIAL_ZOOM_LEVEL,
                 center: { lat: 47.6062, lng: -122.3321 },
                 styles
             });

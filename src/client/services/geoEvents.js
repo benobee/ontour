@@ -1,6 +1,6 @@
 import { ontourClient } from "../lib/ontourClient";
 
-export const getEventsByGeoBoundary = (bounds) => {
+export const getEventsByBoundary = (bounds) => {
     const client = ontourClient();
 
     return new Promise(async (resolve, reject) => {
@@ -36,7 +36,6 @@ export const getEventsByGeoBoundary = (bounds) => {
 
             resolve(response);
         } catch (err) {
-            console.log(err);
             reject(err);
         }
     });

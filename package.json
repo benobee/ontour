@@ -11,9 +11,9 @@
     "client": "webpack-dev-server ./src/client/main.js --hot --watch --colors",
     "server": "nodemon --max-old-space-size=20480 ./src/server/main.js localhost 3000",
     "db": "mongod --dbpath ~/data/db --bind_ip 127.0.0.1 --port 27018",
+    "db-shutdown": "kill $(lsof -ti:27018)",
     "dev": "concurrently --kill-others \"npm run client\" \"npm run server\" \"npm run db\"",
-    "kill": "taskkill /f /im node.exe",
-    "stopserver": "forever stopall"
+    "killall": "forever stopall && kill -2 97382 && npm run db-shutdown"
   },
   "babel": {
     "presets": [
@@ -49,6 +49,7 @@
     "exports-loader": "^0.6.4",
     "extract-text-webpack-plugin": "^3.0.1",
     "fast-async": "^6.3.0",
+    "forever": "^4.0.1",
     "github-release-cli": "^0.3.0",
     "html-loader": "^0.5.1",
     "imports-loader": "^0.7.1",
@@ -67,9 +68,10 @@
     "webpack-hot-server-middleware": "^0.3.2"
   },
   "dependencies": {
-    "@google/maps": "^0.4.5",
-    "@turf/turf": "^5.1.6",
-    "axios": "^0.17.1",
+    "@google/maps": "^1.1.3",
+    "@googlemaps/google-maps-services-js": "^3.1.16",
+    "@turf/turf": "^6.5.0",
+    "axios": "^0.21.1",
     "express": "^4.16.2",
     "js-marker-clusterer": "^1.0.0",
     "load-google-maps": "^1.0.0",

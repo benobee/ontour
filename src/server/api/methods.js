@@ -21,7 +21,7 @@ const methods = {
                 //compile the music genre tags
                 let tagList = [];
 
-                geoEventGroup[i].forEach((item) => {
+                _.each(geoEventGroup[i], (item) => {
                     tagList = tagList.concat(item.genres);
                 });
                 tagList = _.map(_.groupBy(tagList), (item) => {
@@ -49,10 +49,12 @@ const methods = {
             }
         }
 
-        return mappedGeoEvent
-            .filter((item) => {
-                return item.events.length > 1
-            })
+        return new Promise((resolve, reject) => {
+            resolve(mappedGeoEvent
+                .filter((item) => {
+                    return item.events.length > 1
+                }))
+        });
     }
 }
 

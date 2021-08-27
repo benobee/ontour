@@ -49,8 +49,6 @@ body {
 .menu {
     height: 55px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 1em;
     .menu__map-info {
         display: flex;
@@ -73,8 +71,6 @@ body {
         align-items: center;
         height: 40px;
         width: 40px;
-        opacity: 0;
-        visibility: hidden;
         transition: opacity 0.3s;
         .spinner {
             border: 4px solid #f3f3f3;
@@ -83,16 +79,6 @@ body {
             width: 30px;
             height: 30px;
             animation: spin 0.5s linear infinite;
-        }
-    }
-    &.loading {
-        .menu__icon.search {
-            opacity: 0;
-            visibility: hidden;
-        }
-        .menu__icon.spin {
-            opacity: 1;
-            visibility: visible;
         }
     }
 }
@@ -112,15 +98,13 @@ body {
 .meta-info__media-wrapper {
     display: flex;
     overflow: hidden;
-    max-height: 200px;
     box-shadow: 0px 0px 100px rgba(10, 10, 10, 0.5) inset;
     background: black;
     img {
         opacity: 0.7;
-        max-height: 60px;
-        width: 100%;
-        height: auto;
+        height: 100px;
         object-fit: cover;
+        width: 100%;
     }
 }
 
@@ -136,8 +120,6 @@ body {
 .meta-info {
     display: flex;
     flex-wrap: wrap;
-    overflow-y: auto;
-    max-height: 100vh;
     margin: 0.25em;
     .meta-info__box-group {
         box-shadow: 1px 1px 8px lightgrey;
@@ -174,7 +156,7 @@ body {
                 display: flex;
                 flex: 1 1 50px;
                 .meta-info__tag__name {
-                    font-size: 18px;
+                    font-size: 16px;
                     font-family: 'Oswald', sans-serif;
                     font-weight: 400;
                 }
@@ -197,8 +179,22 @@ body {
 }
 
 #interface {
-    width: 20vw;
-    max-width: 300px;
+    max-width: 320px;
+    overflow: hidden;
+    overflow-y: auto;
+    max-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    .menu{
+        width: 40px;
+    }
+    .meta-info{
+        width: 30vw;
+    }
+    .cluster-details{
+        width: 40vw;
+    }
 }
 
 #map {
@@ -208,4 +204,9 @@ body {
     .gm-style{
         text-shadow: 1px 1px 1px white;
     }
+}
+
+.button {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
 }

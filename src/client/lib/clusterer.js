@@ -90,7 +90,6 @@ const customClusterer = (points, bounds, options) => {
             const labels = `${topTags.map((tag) => {
                     return tag.name;
                 }).join(", ")}`;
-
             const modifier = Math.floor(this.logslider(properties.tags.length, pointScale[ 0 ], 10, 24));
             const scaleSize = this.logslider(properties.tags.length, pointScale[ 0 ], 0.2, 1);
             const marker = new google.maps.Marker({
@@ -129,55 +128,57 @@ const customClusterer = (points, bounds, options) => {
          * @return {[type]}         [description]
          */
 
-        mapClusters (resolve) {
-            const clusterMarkers = [];
-            const aggregatedMetaData = [];
-            const boundsCoordsDistance = this.calculateBoundsCoordsDistance();
-            const pointsWithin = this.getPointsWithinBounds();
+        mapClusters () {
+            return new Promise((resolve) => {
+                const clusterMarkers = [];
+                const aggregatedMetaData = [];
+                const boundsCoordsDistance = this.calculateBoundsCoordsDistance();
+                const pointsWithin = this.getPointsWithinBounds();
 
-            pointScale = [];
-            const clustered = turf.clustersDbscan(pointsWithin, boundsCoordsDistance * 0.035, { minPoints: config.minPoints });
+                pointScale = [];
+                const clustered = turf.clustersDbscan(pointsWithin, boundsCoordsDistance * 0.035, { minPoints: config.minPoints });
 
-            //find tag length to establish weight for marker labels
+                //find tag length to establish weight for marker labels
 
-            turf.clusterEach(clustered, "cluster", (cluster) => {
-                const metaData = this.compileMetaData(cluster.features);
+                turf.clusterEach(clustered, "cluster", (cluster) => {
+                    const metaData = this.compileMetaData(cluster.features);
 
-                aggregatedMetaData.push(metaData);
-                pointScale.push(metaData.tags.length);
-            });
-
-            if (config.noise) {
-                const groups = _.groupBy(clustered.features, (item) => {
-                    return item.properties.dbscan;
+                    aggregatedMetaData.push(metaData);
+                    pointScale.push(metaData.tags.length);
                 });
 
-                if (groups.noise && Array.isArray(groups.noise)) {
-                    groups.noise.forEach((item) => {
-                        const metaData = this.compileMetaData(item);
-
-                        aggregatedMetaData.push(metaData);
-                        pointScale.push(metaData.tags.length);
-                        const marker = this.createGmapsMarker(item.geometry.coordinates, metaData);
-
-                        clusterMarkers.push(marker);
+                if (config.noise) {
+                    const groups = _.groupBy(clustered.features, (item) => {
+                        return item.properties.dbscan;
                     });
+
+                    if (groups.noise && Array.isArray(groups.noise)) {
+                        groups.noise.forEach((item) => {
+                            const metaData = this.compileMetaData(item);
+
+                            aggregatedMetaData.push(metaData);
+                            pointScale.push(metaData.tags.length);
+                            const marker = this.createGmapsMarker(item.geometry.coordinates, metaData);
+
+                            clusterMarkers.push(marker);
+                        });
+                    }
                 }
-            }
 
-            //sort points to scale google maps markers
-            pointScale = _.sortBy(pointScale).reverse();
+                //sort points to scale google maps markers
+                pointScale = _.sortBy(pointScale).reverse();
 
-            //generate the actual google map markers
-            turf.clusterEach(clustered, "cluster", (cluster, currentIndex) => {
-                const center = turf.centerOfMass(cluster, { currentIndex });
-                const metaData = aggregatedMetaData[ currentIndex ];
-                const marker = this.createGmapsMarker(center.geometry.coordinates, metaData);
+                //generate the actual google map markers
+                turf.clusterEach(clustered, "cluster", (cluster, currentIndex) => {
+                    const center = turf.centerOfMass(cluster, { currentIndex });
+                    const metaData = aggregatedMetaData[ currentIndex ];
+                    const marker = this.createGmapsMarker(center.geometry.coordinates, metaData);
 
-                clusterMarkers.push(marker);
+                    clusterMarkers.push(marker);
+                });
+
+                resolve(clusterMarkers);
             });
-
-            resolve(clusterMarkers);
         },
 
         /**
@@ -239,7 +240,7 @@ const customClusterer = (points, bounds, options) => {
                     avgPopularity += num;
                 }
             });
-            popularity = _.sortBy(popularity);
+            popularity = _.sortBy(popularity).slice(0, 6);
             avgPopularity = Math.floor(avgPopularity / popularity.length);
             if (!isNaN(avgPopularity)) {
                 Object.assign(metaData, {
@@ -294,17 +295,11 @@ const customClusterer = (points, bounds, options) => {
         }
     };
 
-    /**
-     * [description]
-     * @param  {[type]} (resolve [description]
-     * @return {[type]}          [description]
-     */
+    return new Promise((resolve) => {
+        const clusters = methods.mapClusters();
 
-    const promise = new Promise((resolve) => {
-        methods.mapClusters(resolve);
+        resolve(clusters);
     });
-
-    return promise;
 };
 
 export default customClusterer;

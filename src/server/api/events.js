@@ -71,13 +71,13 @@ MongoClient.connect('mongodb://localhost:27018/ontour', (err, client) => {
             }
 
             // To Array
-            query.toArray((err, results) => {
+            query.toArray(async (err, results) => {
                 if (err) {
                     console.log(err);
                 }
-                results = methods.compileTags(results);
-                console.log(`returning event results: ${results.length} records for the map boundary`);
-                res.send(results);
+                const tags = await methods.compileTags(results);
+                console.log(`returning event results: ${results.length} records and ${tags.length} tags for the map boundary`);
+                res.send(tags);
             });
         }
     })

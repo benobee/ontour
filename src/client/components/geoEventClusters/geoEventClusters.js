@@ -1,8 +1,8 @@
 import templateHTML from "./geoEventClusters.html";
-import googleMapsClient from "../../lib/googleMaps";
+import googleMapsClient, { INITIAL_ZOOM_LEVEL } from "../../lib/googleMaps";
 import customClusterer from "../../lib/clusterer";
 import _ from "underscore";
-import { getEventsByGeoBoundary } from "../../services/geoEvents";
+import { getEventsByBoundary } from "../../services/geoEvents";
 import geocodePlaces from "../../lib/geocodePlaces";
 const turf = require("@turf/turf");
 
@@ -11,7 +11,8 @@ const geoEventClusters = {
     el: "#app",
     data () {
         return {
-            google: {},
+            google: null,
+            zoomLevel: null,
             placesService: null,
             markers: [],
             points: [],
@@ -20,13 +21,18 @@ const geoEventClusters = {
                 region: "",
                 city: ""
             },
-            updating: false,
             fetchInProgress: false,
             layer: {
                 close: [],
                 far: []
             }
         };
+    },
+
+    computed: {
+        isLoading () {
+            return this.fetchInProgress;
+        }
     },
 
     filters: {
@@ -69,15 +75,6 @@ const geoEventClusters = {
             icon.fillColor = "hsl(349, 96%, 66%)";
             icon.strokeColor = "hsl(349, 96%, 66%)";
             this.markers[ index ].setIcon(icon);
-            const data = this.markers[ index ].properties;
-
-            console.log({
-                numberOfArtists: data.artists.length,
-                numberOfEvents: data.events.length,
-                popularityAvg: data.popularity.avg,
-                ticketsSoldAvg: data.ticketsSold ? data.ticketsSold.avg : 0,
-                topTags: data.topTags,
-            });
         },
 
         geoMarkerEventCluster (array) {
@@ -118,31 +115,28 @@ const geoEventClusters = {
         },
 
         getRecords () {
-            if (this.google.map.zoom >= 7) {
-                this.updating = true;
-                this.getPointsWithinBounds();
-            }
+            this.fetchInProgress = true;
+            this.getPointsWithinBounds();
+        },
+
+        getClusterDetails (info) {
+            this.details = info;
+            console.log(info);
+        },
+
+        clearDetails () {
+            this.details = null;
         },
 
         async getPointsWithinBounds () {
             try {
-                const pageSize = 50;
                 const bounds = this.calculateBoundsCoords();
-                const response = await getEventsByGeoBoundary(bounds);
-                const numberOfPages = Math.round(response.data.length / pageSize);
-                const paginated = [];
+                const response = await getEventsByBoundary(bounds);
 
-                this.updating = false;
-
-                for (let i = 0; i < numberOfPages; i++) {
-                    const number = i === 0 ? 0 : 1;
-                    const page = response.data.slice(i * pageSize + i === 0 ? 0 : 1, ((i + 1) * pageSize) + number) || [];
-
-                    paginated.push(page);
-                }
-
+                this.fetchInProgress = false;
                 this.setMarkersToMap(response.data);
             } catch (err) {
+                this.fetchInProgress = false;
                 console.log(err);
             }
         },
@@ -157,6 +151,7 @@ const geoEventClusters = {
                 ...this.markers,
                 ...this.geoMarkerEventCluster(clusteredMarkers)
             ];
+            this.toggleActiveStateOnMarker(0);
             this.setMap();
         },
 
@@ -191,7 +186,8 @@ const geoEventClusters = {
         interactEvents () {
             const zoom = this.google.map.zoom;
 
-            if (zoom >= 7) {
+            this.zoomLevel = zoom;
+            if (zoom > 6) {
                 this.setMarkersToMap(this.points, { noise: true });
             } else {
                 this.clearMarkers();
@@ -256,6 +252,7 @@ const geoEventClusters = {
             });
             this.placesService = geocodePlaces(google);
             this.location = await this.placesService.getLocation();
+            this.zoomLevel = INITIAL_ZOOM_LEVEL;
         });
     }
 };

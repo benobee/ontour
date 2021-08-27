@@ -1,55 +1,76 @@
 <div class="map-wrapper">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Londrina+Outline&display=swap" rel="stylesheet"> 
-    <div id="interface">
-        <div class="menu" v-bind:class="{loading: this.updating}">
+    <div id="interface" v-show="this.location.city">
+        <div class="menu">
             <div class="menu__map-info">
             </div>
-            <div class="menu__nav-item" v-on:click="getRecords">
-                <div class="menu__icon search">
+            <div class="menu__nav-item">
+                <div class="menu__icon spin" v-show="this.isLoading">
+                    <div class="spinner"></div>
+                </div>
+                <div v-if="zoomLevel > 6" class="menu__icon search" v-on:click="getRecords" v-show="this.isLoading === false">
                     <i class="fas fa-search fa-2x" aria-hidden="true"></i>
                 </div>
             </div>
-            <div class="menu__nav-item">
-                <div class="menu__icon spin">
-                    <div class="spinner"></div>
-                </div>
-            </div>
         </div>
-        <div class="meta-info">
-            <div class="meta-info__box-group" 
-                v-if="item.hasOwnProperty('properties')" 
-                v-bind:class="{active: item.hasOwnProperty('properties') && item.properties.selected}" 
-                v-for="(item, index) in markers" 
-                v-on:click="toggleActiveStateOnMarker(index)"
-            >
-                <div class="meta-info__box">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <label>Top Genres</label>
-                    <div class="meta-info__tags">
-                        <div class="meta-info__tag">
-                            <div class="meta-info__tag__name">{{item.properties.topTags}}</div>
+        <div class="meta-info" v-if="this.markers.length > 0">
+            <div class="meta-info__inner-wrapper">
+                <div class="meta-info__box-group" 
+                    v-if="item.hasOwnProperty('properties')"
+                    v-bind:class="{active: item.hasOwnProperty('properties') && item.properties.selected}"
+                    v-for="(item, index) in markers"
+                    v-on:click="toggleActiveStateOnMarker(index)"
+                >
+                    <div class="meta-info__box">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <label>Top Genres</label>
+                        <div class="meta-info__tags">
+                            <div class="meta-info__tag">
+                                <div class="meta-info__tag__name">{{item.properties.topTags}}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="meta-info__box full-width">
-                    <label>Artists</label>
-                    <div class="meta-info__media-list">
-                        <div class="meta-info__media-object" v-for="artist in item.properties.artists.slice(0, 10)" :key="artist.id">
-                            <div class="meta-info__media-link" :data-href="'spotify:artist:' + artist.id">
-                                <div class="meta-info__media-content">
-                                    <div class="meta-info__media-wrapper" v-for="image in artist.images.slice(0,1)">
-                                        <img :src="image.url | img" alt="">
-                                    </div>
-                                    <div class="meta-info__title meta-info__item">
-                                        {{artist.name}}
+                    <div class="meta-info__box full-width" v-if="item.properties.selected">
+                        <div v-if="zoomLevel > 10">
+                            <label>Venue size</label>
+                            {{item.properties.possibleVenueSize}}
+                        </div>
+                        <label>Artists</label>
+                        <div class="meta-info__media-list">
+                            <div class="meta-info__media-object" v-for="artist in item.properties.artists.slice(0, 10)" :key="artist.id">
+                                <div class="meta-info__media-link" :data-href="'spotify:artist:' + artist.id">
+                                    <div class="meta-info__media-content">
+                                        <div class="meta-info__media-wrapper" v-for="image in artist.images.slice(0,1)">
+                                            <img :src="image.url | img" alt="">
+                                        </div>
+                                        <div class="meta-info__title meta-info__item">
+                                            {{artist.name}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="button" v-on:click="getClusterDetails(item.properties)" v-show="item.properties.selected">
+                        <button onClick>View details</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class="cluster-details" v-show="this.details">
+            <div class="title">
+
+            </div>
+            <div class="location">
+
+            </div>
+            <div class="events">
+
+            </div>
+            <div class="popularity">
+
+            </div>
+            <div class="tickets">
+
             </div>
         </div>
     </div>

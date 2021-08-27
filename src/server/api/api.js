@@ -1,1 +1,1 @@
-require("./events.js")
+require("./events.js");
